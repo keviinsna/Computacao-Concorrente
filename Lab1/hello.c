@@ -3,12 +3,15 @@
 
 #define NTHREADS 10
 
+int vetor[NTHREADS];
+
 /* função que a thread irá executar */
 void * tarefa (void * arg){
 	 /* Como estou passando o endereço, precisamos usar o * para usar o valor do ponteiro*/
 	int ident = * (int *) arg;
 	printf("Olá, sou a thread %d!\n", ident);
-	
+
+	vetor[ident - 1] = ident;	
         /* função que finaliza a thread e retorna seu valor*/	
 	pthread_exit(NULL);
 }
@@ -25,18 +28,15 @@ int main(void){
 			printf("EROO -- pthread_create\n");
 	}
 	for(i = 0; i < NTHREADS; i++){	
-		/* Função pthread_join() espera pelo término de uma thread específica recebendo 2 parâmentros.
-		 * 1 - O identificador da thread que se deseja esperar o fim.
-		 * 2 - É o retorno da tarefa que a thread espeficiada faz. Como a tarefa não retorna nada, então passaremos NULL.
-		 * Caso a thread termine antes da pthread_join esperar por ela, ela apenas pega o retorno da thread. 
-		 * Há uma sinalização do sistema que indica se a thread terminou ou não. 
-		 */
 		if(pthread_join(tid[i], NULL))
 			printf("EROO -- pthread_create\n");
 	}
+	for(i = 0; i < NTHREADS; i++){	
+		printf("%d%c", vetor[i], (i != NTHREADS - 1)? ' ' : '\n');
+	}
 
 	printf("Olá, sou a thread principal!\n");
-	pthread_exit(NULL);	
+	/*pthread_exit(NULL);	Não precisa mais forçar, já que o join já espera por todas as threads*/
 	return 0;
 }
 
