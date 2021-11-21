@@ -24,6 +24,17 @@ int main(void){
 		if(pthread_create(&tid[i], NULL, tarefa, (void *)&ident[i]))
 			printf("EROO -- pthread_create\n");
 	}
+	for(i = 0; i < NTHREADS; i++){	
+		/* Função pthread_join() espera pelo término de uma thread específica recebendo 2 parâmentros.
+		 * 1 - O identificador da thread que se deseja esperar o fim.
+		 * 2 - É o retorno da tarefa que a thread espeficiada faz. Como a tarefa não retorna nada, então passaremos NULL.
+		 * Caso a thread termine antes da pthread_join esperar por ela, ela apenas pega o retorno da thread. 
+		 * Há uma sinalização do sistema que indica se a thread terminou ou não. 
+		 */
+		if(pthread_join(tid[i], NULL))
+			printf("EROO -- pthread_create\n");
+	}
+
 	printf("Olá, sou a thread principal!\n");
 	pthread_exit(NULL);	
 	return 0;
