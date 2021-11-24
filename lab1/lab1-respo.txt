@@ -1,0 +1,19 @@
+
+Laboratório 1 - Computação Concorrente
+
+Atividade 1 - Objetivo: Mostrar como criar um programa concorrente em C	usando a biblioteca pthread.h.
+Há mudanças na ordem de execução das threads? Por que isso ocorre?
+	R.: Sim, há mudanças na ordem de execução. Isso ocorre porque o sistema operacional é o responsável pelo escalonamento da execução de cada thread. Logo, pode ocorrer de uma thread entrar numa fila que contenha menos tarefas a serem executadas, e dessa forma, ela terminará mais rápido do que as outras threads. Nós programadores não temos controle sobre esse escalonamento, fica totalmente a cargo do sistema operacional.
+	Outra resposta plausível para esse acontecimento é: Ambas as threads executaram suas tarefas ao mesmo tempo, porém ao requisitar o dispositivo de saída (printf()) as threads será enfileiradas, e então o printf() de uma sairá primeiro que o da outra. 
+
+Atividade 2 - Objetivo: Mostrar como passar um argumento para uma thread.
+Qual foi a diferença em relação ao programa anterior?
+	R.: Agora com várias threads criadas pode-se perceber claramente a aleatoriedade do escalonamento das threads por parte do SO. Além disso, passando os argumentos para a função que as threads executam vemos como podemos trabalhar com eles.
+
+Atividade 3 - Objetivo: Mostrar como passar mais de um argumento para uma thread.
+O programa funcionou como esperado?
+	R.: Sim, o programa funcionou perfeitamente tal como anteriormente.
+
+Atividade 4 - Objetivo: Mostrar como fazer a thread principal (main) aguardar as outras threads terminarem.
+O que aconteceu de diferente em relação às versões/execuções diferentes?
+	R.: As saídas de cada thread ocorrem de acordo com o escalonamento do SO, como esperado. Porém, ao usar pthread_join() a main só terminará sua execução após todas as threads terminarem as suas, logo, o printf() da main sempre é o último a ser executado. 
