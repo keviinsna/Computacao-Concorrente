@@ -7,7 +7,7 @@
 float *mat; // matriz de entrada
 float *vet; // vetor de entrada
 float *saida; // vetor de saída
-
+int nthreads; // Número de threads
 
 typedef struct{
 	int id; // Identificador do elemento que a thread irá processar
@@ -19,8 +19,10 @@ typedef struct{
 void * mat_x_vet(void * arg){
 	/* Para cada nova linha da matriz, se cria uma nova thread e realiza o produto mat x vet */
 	t_args *args = (t_args *) arg;
-	for(int i = 0; i < args->dim; i++){
-		saida[args->id] += mat[(args->id) * (args->dim) + i] * vet[i];	
+	printf("Sou  a thread: %d\n", args->id);
+	for(int i = args->id; i < args->dim; i += nthreads){
+		for(int j = 0; j < args->dim; j++)
+			saida[i] += mat[i * (args->dim) + j] * vet[j];	
 	}
 	pthread_exit(NULL);
 }
@@ -31,11 +33,13 @@ int main(int argc, char * argv[]){
 	t_args *args; // Identificadores locais e dimensão
 	
 	// Leitura e avaliação dos parâmetros de entrada
-	if(argc < 2){
-		printf("Digite: %s <dimensão da matriz\n", argv[0]);
+	if(argc < 3){
+		printf("Digite: %s <dimensão da matriz>, <número de threads>\n", argv[0]);
 		return 1;
 	}
 	dim = atoi(argv[1]); // Conversão de char para int
+	nthreads = atoi(argv[2]); // Número de threads
+	if(nthreads > dim) nthreads = dim; // Evita criar threads desnecessárias 
 
 
 	// Alocação de memória para as estruturas de dados
@@ -59,14 +63,14 @@ int main(int argc, char * argv[]){
 
 	// Multiplicação da matriz pelo vetor
 	// Alocação das estruturas
-	tid = (pthread_t *) malloc(sizeof(pthread_t) * dim);
+	tid = (pthread_t *) malloc(sizeof(pthread_t) * nthreads);
 	if(tid == NULL) {printf("EROO -- malloc\n"); return 2;}
 
-	args = (t_args *) malloc(sizeof(t_args) * dim);
+	args = (t_args *) malloc(sizeof(t_args) * nthreads);
 	if(args == NULL) {printf("EROO -- malloc\n"); return 2;}
 
 	// Criação das threads
-	for(int i = 0; i < dim; i++){
+	for(int i = 0; i < nthreads; i++){
 		(args + i) -> id = i;
 		(args + i) -> dim = dim;
 		if(pthread_create((tid + i), NULL, mat_x_vet, (void *) (args + i))){
@@ -75,7 +79,7 @@ int main(int argc, char * argv[]){
 	}
 	
 	// Espera pelo término das threads	
-	for(int i = 0; i < dim; i++){
+	for(int i = 0; i < nthreads; i++){
 		pthread_join(*(tid + i), NULL);
 	}	
 
