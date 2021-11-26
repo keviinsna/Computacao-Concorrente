@@ -2,14 +2,34 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 float *mat; // matriz de entrada
 float *vet; // vetor de entrada
 float *saida; // vetor de saída
 
-int main(int argc, char * argv[]){
-	int dim; // dimensao da matriz de entrada
 
+typedef struct{
+	int id; // Identificador do elemento que a thread irá processar
+	int dim; // Dimensão das estruturas de entrada
+
+}t_args;
+
+// Função que as treads executarão
+void * mat_x_vet(void * arg){
+	/* Para cada nova linha da matriz, se cria uma nova thread e realiza o produto mat x vet */
+	t_args *args = (t_args *) arg;
+	for(int i = 0; i < args->dim; i++){
+		saida[args->id] += mat[(args->id) * (args->dim) + i] * vet[i];	
+	}
+	pthread_exit(NULL);
+}
+
+int main(int argc, char * argv[]){
+	int dim; // Dimensao da matriz de entrada
+	pthread_t *tid; // Identificadores das threads no sistema
+	t_args *args; // Identificadores locais e dimensão
+	
 	// Leitura e avaliação dos parâmetros de entrada
 	if(argc < 2){
 		printf("Digite: %s <dimensão da matriz\n", argv[0]);
@@ -38,9 +58,25 @@ int main(int argc, char * argv[]){
 	}
 
 	// Multiplicação da matriz pelo vetor
+	// Alocação das estruturas
+	tid = (pthread_t *) malloc(sizeof(pthread_t) * dim);
+	if(tid == NULL) {printf("EROO -- malloc\n"); return 2;}
+
+	args = (t_args *) malloc(sizeof(t_args) * dim);
+	if(args == NULL) {printf("EROO -- malloc\n"); return 2;}
+
+	// Criação das threads
 	for(int i = 0; i < dim; i++){
-		for(int j = 0; j < dim; j++)
-			saida[i] += mat[i * dim + j] * vet[j];
+		(args + i) -> id = i;
+		(args + i) -> dim = dim;
+		if(pthread_create((tid + i), NULL, mat_x_vet, (void *) (args + i))){
+			printf("ERRO -- pthread_create\n"); return 3;
+		}
+	}
+	
+	// Espera pelo término das threads	
+	for(int i = 0; i < dim; i++){
+		pthread_join(*(tid + i), NULL);
 	}	
 
 	// Exibiçãodos resultados
@@ -61,7 +97,7 @@ int main(int argc, char * argv[]){
 	
 	// Liberação de memória
 
-	free(mat); free(vet); free(saida);
+	free(mat); free(vet); free(saida); free(args); free(tid);
 
 	return 0;
 }
