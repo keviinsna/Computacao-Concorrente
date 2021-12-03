@@ -7,30 +7,48 @@
 
 long int dim; // Dimensão do vetor de entrada
 int nthreads; // Número de threads
-int *vetor;   // Vetor de entrada
+float *vetor;   // Vetor de entrada
 
 // Tarefa das threads
 void * soma_vetor(void * arg){
 	long int id = (long int) arg; // Identificador da thread
-	long int soma_local; // Variável da soma de elementos
+
+	/* Obs.: Como todo ponteiro tem 8 bytes e float tem 4, 
+	 * a conversão de ponteiro de void * para float quebra, 
+	 * pois não espaço suficiente para a conversão.
+	 */
+	float *soma_local; // Variável da soma de elementos
+
 	long int tam_bloco = dim / nthreads; // Tamanho de cada bloco da thread
 	long int ini = id * tam_bloco; // Elemento inicial do bloco da thread
 	long int fim = (id == nthreads - 1)? dim : ini + tam_bloco; //Elemento final do bloco da thread (já tratando o resto)
 
+	// Comom soma_local agora é ponteiro, devemos alocar memória
+	soma_local = (float *) malloc(sizeof(float));
+	if(soma_local == NULL){fprintf(stderr, "ERRO -- malloc()\n"); exit(1);}
+	*soma_local = 0;
+
 	for(long int i = ini; i < fim; i++)
-		soma_local += vetor[i];
+		*soma_local += vetor[i];
 
-	// Retorna o resultado da soma local
+	/* soma_local é um ponteiro, logo guarda o endereço da soma.
+	 *  Então aqui a conversão fica tudo certo. 
+	 */
 	pthread_exit((void *) soma_local);
-
 }
 
 
 int main(int argc, char * argv[]){
-	long int soma_seq = 0; // Somatório elementos sequencial
-	long int soma_conc = 0; // Somatório elementos concorrente
+	float soma_seq = 0; // Somatório elementos sequencial
+	float soma_conc = 0; // Somatório elementos concorrente
 	double ini, fim; // Tomada de tempo
-	long int retorno; // Retorno do resultado de cada thread
+
+	/* Como soma_local é um ponteiro lá na tarefa das threads, 
+	 * e é o endereço do resultado que é retornado,
+	 * então a variável retorno também deve ser um ponteiro.
+	 */
+	float *retorno; // Retorno do resultado de cada thread
+	
 	pthread_t *tid; // Identificadores das threads do sistema
 
 	// Recebe e verifica os valores de entrada
@@ -45,14 +63,14 @@ int main(int argc, char * argv[]){
 	if(nthreads > dim) nthreads = dim;
 
 	// Aloca memória para o vetor
-	vetor = (int *) malloc(sizeof(int) * dim);
+	vetor = (float *) malloc(sizeof(float) * dim);
 	if(vetor == NULL){
 		fprintf(stderr, "ERRO -- malloc()\n");
 	}
 
 	// Preenche o vetor 
 	for(long int i = 0; i < dim; i++)
-		vetor[i] = i % 1000;
+		vetor[i] = 1000.1 / (i + 1);
 
 	GET_TIME(ini);
 	// Soma sequencial dos elementos
@@ -80,18 +98,27 @@ int main(int argc, char * argv[]){
 	}
 	// Espera pelo fim das threads	
 	for(long int i = 0; i < nthreads; i++){
+		/* Não será necessário alocar memória para retorno, pois
+		 * como retornamos o endereço de soma_local, a variável
+		 * retorno já será preenchida com o valor, já que ela 
+		 * também é um ponteiro para float e está recebendo 
+		 * justamente o endereço do resultado
+		 */
 		if(pthread_join(*(tid + i), (void **) &retorno)){
 			fprintf(stderr, "ERRO -- pthread_join()\n");
 			return 3;
 		}
-		soma_conc += retorno;
+		soma_conc += *retorno;
+		
+		// Libera soma_local automaticamente
+		free(retorno);
 	}
 	GET_TIME(fim); 
 
 	// Exibição dos resultados
 	printf("Tempo concorrente: %lf\n", fim - ini);
-	printf("Soma elementos sequenial:   %ld\n", soma_seq);
-	printf("Soma elementos concorrente: %ld\n", soma_conc);
+	printf("Soma elementos sequenial:   %f\n", soma_seq);
+	printf("Soma elementos concorrente: %f\n", soma_conc);
 
 	// Libera memória
 	free(vetor); free(tid);
