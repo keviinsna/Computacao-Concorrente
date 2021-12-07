@@ -151,9 +151,9 @@ int main(int argc, char *argv[]){
 	printf("Tempo concorrente: %lf\n", t_conc);
 	printf("Desempenho: %lf\n", t_seq / t_conc);
 	
-/*	printf("Número de valores dentro do intervalo (Seq):  %d\n", qtd_sequencial);
-	printf("Número de valores dentro do intervalo (Conc): %d\n", qtd_concorrente);
-*/
+	//printf("Número de valores dentro do intervalo (Seq):  %d\n", qtd_sequencial);
+	//printf("Número de valores dentro do intervalo (Conc): %d\n", qtd_concorrente);
+
 	// Libera memória
 	free(vetor); free(tid); free(args);
 	return 0;
