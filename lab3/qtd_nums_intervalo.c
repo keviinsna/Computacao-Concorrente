@@ -21,18 +21,20 @@ long int dim; // Dimensão do vetor
 int nthreads; // Número de threads
 float *vetor; // Vetor de entrada
 
+// Estrutura que será passada para a tarefa das threads
 typedef struct{
 	int id; // Identificador do elemento que a thread irá processar
 	float l_inferior, l_superior; // Limiar inferior e limiar superior
 }t_args;
 
-
+// Inicializa o vetor de entrada
 void inicializa_vetor(){
 	srand(time(NULL));
 	for(long int i = 0; i < dim; i++)
-		vetor[i] = ((float) rand() / (float) RAND_MAX) * NUM;  // Mudar para aleatório
+		vetor[i] = ((float) rand() / (float) RAND_MAX) * NUM;
 }
 
+// Tarefa que as thredas irão executar
 void * tarefa(void * arg){
 	t_args *args = (t_args *) arg;
 
@@ -62,7 +64,7 @@ void * tarefa(void * arg){
 	pthread_exit((void *) qtd_local);
 }
 
-
+// Fluxo principal
 int main(int argc, char *argv[]){
 	float l_inferior, l_superior; // Limiar inferior e limiar superior, respectivamente
 	int qtd_sequencial = 0, qtd_concorrente = 0;  // Quantidade de valores dentro do intervalo
@@ -149,9 +151,9 @@ int main(int argc, char *argv[]){
 	printf("Tempo concorrente: %lf\n", t_conc);
 	printf("Desempenho: %lf\n", t_seq / t_conc);
 	
-/*	printf("Número de valores dentro do intervalo (Seq):  %d\n", qtd_sequencial);
-	printf("Número de valores dentro do intervalo (Conc): %d\n", qtd_concorrente);
-*/
+	//printf("Número de valores dentro do intervalo (Seq):  %d\n", qtd_sequencial);
+	//printf("Número de valores dentro do intervalo (Conc): %d\n", qtd_concorrente);
+
 	// Libera memória
 	free(vetor); free(tid); free(args);
 	return 0;
