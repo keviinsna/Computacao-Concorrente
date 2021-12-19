@@ -1,0 +1,30 @@
+
+Módulo 2 - Laboratório 5 - Computação Concorrente
+
+Sincronização condicional com variáveis de condição
+
+Atividade 1 - Objetivo: Introduzir o uso de variáveis de condição.
+Altere o número de threads A's para 1. O que vai ocorrer na execução? O programa vai terminar? Por quê?
+	R.: O programa vai entrar em deadlock, pois como há apenas 1 thread A, o valor de x nunca
+	    nunca chegará a 2. Logo, a thread B será bloqueada pela sincronização por condição, mas
+	    não será desbloqueada pois não existe outra thread que faça x = 2 e que sinalize para o
+	    desbloqueio da thread B.
+
+Altera o número de threads B para 2 e faça as correções necessárias no código para que a aplicação continue
+funcionando. 
+	R.: Novamente o programa pode entrar em deadlock, pois caso as threads B's entrem em execução 
+	    primeiro que as threads A's, ao chegar em x = 0, apenas 1 thread B receberá a sinalização
+	    e será desbloqueada, enquanto que a outra ficará bloqueada na fila, causando o deadlock.
+	    Uma forma de contornar esse problema seria fazer com o que as threads A's não sinalizem
+	    mais signal, mas sim com broadcast, fazendo com o que todas as threads da fila sejam 
+	    liberadas.
+
+Atividade 3 - Objetivo: Explorar características do funcionamento das operações sobre variáveis de condição
+em pthreads.
+Comente a linha 52 e descomente a linha 53, e execute novamente a aplicação várias vezes. O log de execução
+impresso na tela foi sempre correto? A condição lógica da aplicação foi atendida em todas as execuções?
+	R.: O log de execução não foi impresso corretamente. Uma justificativa para isso é: A thread B
+	    encontrou um valor não múltiplo de 10 e foi bloqueada. Uma das threads A's encontrou um valor
+	    múltiplo de 10 e liberou a thread B. Em seguida, como a thread B não verifica novamente o valor
+	    , a outra thread A executou na frente da thread B e alterou novamente o valor de x (condição de
+	    corrida), logo B imprime o resultado incorreto.
