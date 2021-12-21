@@ -62,6 +62,9 @@ void *print_frase(void *t){
 		pthread_mutex_lock(&lock);
 		
 		// Equanto as threads 2, 3, 4 e 5 não imprimirem, thread 1 se bloqueia
+		/* Aqui entra o while, pois pode ocorrer da thread 2 imprimir, mas a 3 
+		 * não, então tem que verificar a todo momento.
+		 */
 		while(!(ct[1] && ct[2] && ct[3] && ct[4])){
 			//printf("Thread %d bloqueada!\n", args->id);
 			pthread_cond_wait(&cond, &lock);
@@ -80,7 +83,8 @@ void *print_frase(void *t){
 		pthread_mutex_lock(&lock);
 
 		// Enquanto a thread 5 não imprimir, threads 2, 3 e 4 se bloqueiam
-		while(!ct[4]){
+		// Aqui entra o if, pois a thread 5 não tem como ser "desimpressa"
+		if(!ct[4]){
 			//printf("Thread %d bloqueada!\n", args->id);
 			pthread_cond_wait(&cond, &lock);
 			//printf("Thread %d desbloqueada!\n", args->id);
