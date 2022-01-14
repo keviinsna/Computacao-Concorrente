@@ -42,38 +42,6 @@ void barreira(int nthreads){
 	pthread_mutex_unlock(&lock);
 }
 
-// Tarefa de somatório
-int somatorio(int *vetor, int tam){
-	// Entrada seção crítica
-	pthread_mutex_lock(&lock);
-
-	int s = 0;
-	for(int i = 0; i < tam; i++)
-		s += *(vetor + i);
-	
-	// Saída seção crítica
-	pthread_mutex_unlock(&lock);
-	return s;
-}
-
-// Tarefa de gerar um novo valor e guardar no vetor
-void novo_numero(int *vetor, int pos){
-	// Entrada seção crítica
-	pthread_mutex_lock(&lock);
-
-	*(vetor + pos) = rand() % 10;
-
-	// Saída seção crítica
-	pthread_mutex_unlock(&lock);
-}
-
-// Exibe um vetor na tela
-void print_vetor(int *vetor, int tam){
-	printf("\n");
-	for(int i = 0; i < tam; i++)
-		printf("%d%c", *(vetor + i), (i != tam - 1)?'\t':'\n');
-}
-
 // Tarefa das threads
 void *tarefa(void *arg){
 	long int id = (long int) arg;
@@ -84,20 +52,17 @@ void *tarefa(void *arg){
 
 	for(int i = 0; i < N; i++){
 		// Soma todos os elementos do vetor
-		//printf("Thread %ld quer somar o vetor...\n", id);
-		*soma += somatorio(vet, N);
+		for(int j = 0; j < N; j++)
+			*soma += *(vet + j);
 
 		// Espera pelo término de todas até esse passo
 		barreira(N);
-		//printf("Thread %ld somou!\n", id);
 
 		// Gera um número aleatório e guarda no vetor
-		//printf("Thread %ld quer atualizar vetor...\n", id);
-		novo_numero(vet, id);
+		*(vet + id) = rand() % 10;
 
 		// Espera pelo término de todas até esse passo
 		barreira(N);
-		//printf("Thread %ld atualizou o vetor!\n", id);
 	
 	}
 	pthread_exit((void *) soma);
