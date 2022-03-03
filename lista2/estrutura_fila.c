@@ -6,7 +6,8 @@ typedef struct _NO{
 
 // Estrutura da lista
 typedef struct _FILA{
-        NO *inicio;  //  Ponteiro para o início da fila, onde sairão as requisições
+	int qtd;      // Quantidade de elementos dentro da fila
+	NO *inicio;  //  Ponteiro para o início da fila, onde sairão as requisições
         NO *fim;    //   Ponteiro para o fim da fila, onde entrarão novas requisições
 }FILA;
 
@@ -18,6 +19,7 @@ FILA *cria_fila(){
                 exit(1);
         }
 
+	f->qtd = 0;
         f->inicio = NULL;
         f->fim = NULL;
 
@@ -47,6 +49,7 @@ void insere_fila(FILA *f, int info){
                 f->fim->proximo = no;
         }
 
+	f->qtd++;
         f->fim = no;
 }
 
@@ -71,6 +74,7 @@ int remove_fila(FILA *f){
                 f->fim = NULL;
 
 	free(no_inicial);
+	f->qtd--;
 
         return info;
 }
@@ -84,7 +88,7 @@ int remove_fila(FILA *f){
 void print_fila(FILA *f){
         NO *no;
 
-	if(f->inicio != NULL){
+	if(f->qtd > 0){
 		no = f->inicio;
 	        do{
 	                printf("%d\t", no->info);
